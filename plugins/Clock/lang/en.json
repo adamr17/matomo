@@ -1,7 +1,7 @@
 {
     "Clock": {
         "Utility": "Utility",
-        "Currentlocaltimeinwebsitetimezone": "Current local time in website timezone",
+        "Currentlocaltimeinwebsitetimezone": "Current local time in website's timezone",
         "SiteTime": "Site Time",
         "LocalTime": "Local Time"
     }
