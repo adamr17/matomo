@@ -296,7 +296,12 @@ class TrackerCodeGenerator
         }
         $options = '';
         if ($mergeSubdomains && !empty($firstHost)) {
-            $options .= '  _paq.push(["setCookieDomain", "*.' . $firstHost . '"]);' . "\n";
+            $cookieDomain = $firstHost;
+            // Strip 'www' subdomain from the host if the setting to track visitors across all subdomains is enabled
+            if (!strncasecmp($cookieDomain, 'www.', 4)) {
+                $cookieDomain = substr($cookieDomain, 4);
+            }
+            $options .= '  _paq.push(["setCookieDomain", "*.' . $cookieDomain . '"]);' . "\n";
         }
         if ($mergeAliasUrls && !empty($websiteHosts)) {
             $urls = '["*.' . implode('","*.', $websiteHosts) . '"]';
