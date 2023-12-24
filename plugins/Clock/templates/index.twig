@@ -1,0 +1,71 @@
+{% set siteTimeLabel %}{{ 'Clock_SiteTime'|translate }}{% endset %}
+{% set localTimeLabel %}{{ 'Clock_LocalTime'|translate }}{% endset %}
+
+{% block content %}
+
+    <div class="clock-widget">
+        <div id="site-time"></div>
+        <div id="local-time"></div>
+    </div>
+
+    <script>
+        const is12HourFormat = {{ is12HourFormat ? 'true' : 'false' }};
+        const siteTimezone = "{{ siteTimezone }}";
+
+        let previousSiteTime = '';
+
+        function updateTimes() {
+            const options = {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: is12HourFormat ? "numeric" : "2-digit",
+                minute: "2-digit",
+                hour12: is12HourFormat
+            };
+
+            const siteFormatter = new Intl.DateTimeFormat("en-US", Object.assign({}, options, {timeZone: siteTimezone}));
+            const localFormatter = new Intl.DateTimeFormat("en-US", options);
+
+            const now = new Date();
+            const siteDate = siteFormatter.format(now);
+            const localDate = localFormatter.format(now);
+
+            const formattedSiteTime = formatDateTime(siteDate);
+            const formattedLocalTime = formatDateTime(localDate);
+
+            if (formattedSiteTime !== previousSiteTime) {
+                // Fixing a small bug/annoyance here by only changing the textContent if the time has actually changed.
+                // We want to keep re-running this function every second so that the clock is as up-to-date as possible,
+                // but if we keep setting the textContent every second then the text isn't easily selectable on the
+                // page.
+
+                const siteTimeDiv = document.getElementById("site-time");
+                const localTimeDiv = document.getElementById("local-time");
+
+                if (formattedSiteTime !== formattedLocalTime) {
+                    siteTimeDiv.textContent = "{{ siteTimeLabel }}: " + formattedSiteTime;
+                    localTimeDiv.textContent = "{{ localTimeLabel }}: " + formattedLocalTime;
+                    localTimeDiv.style.display = "block";
+                } else {
+                    siteTimeDiv.textContent = formattedSiteTime;
+                    localTimeDiv.style.display = "none";
+                }
+
+                previousSiteTime = formattedSiteTime;
+            }
+
+            setTimeout(updateTimes, 1000); // Update the time every second
+        }
+
+        function formatDateTime(dateTimeString) {
+            // Convert the date format from MM/DD/YYYY to YYYY-MM-DD
+            const [date, time] = dateTimeString.split(', ');
+            const [month, day, year] = date.split('/');
+            return `${year}-${month}-${day} ${time}`;
+        }
+
+        updateTimes(); // Initial call to set the time
+    </script>
+
+{% endblock %}
