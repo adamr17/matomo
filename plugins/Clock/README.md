@@ -2,5 +2,5 @@
 
 ## Description
 
-Add your plugin description here.
+Clock that displays current local time in the website's timezone
 
