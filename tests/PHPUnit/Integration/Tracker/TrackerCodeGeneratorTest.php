@@ -308,6 +308,58 @@ class TrackerCodeGeneratorTest extends IntegrationTestCase
         $this->assertEquals($expected, $jsTag);
     }
 
+    /**
+     * Test that a www subdomain is stripped from setCookieDomain value when mergeSubdomains is true.
+     */
+    public function testJavascriptTrackingCode_MergeSubdomainsStripsWww()
+    {
+        $generator = new TrackerCodeGenerator();
+
+        $urls = [
+            'https://www.example.com/piwik',
+        ];
+        $idSite = \Piwik\Plugins\SitesManager\API::getInstance()->addSite('Site name here <-->', $urls);
+        $jsTag = $generator->generate(
+            $idSite,
+            $piwikUrl = 'https://www.example.com/piwik',
+            $mergeSubdomains = true
+        );
+
+        $expectedString = '_paq.push(["setCookieDomain", "*.example.com"]);';
+
+        $this->assertStringContainsString(
+            $expectedString,
+            $jsTag,
+            'www subdomain is stripped from setCookieDomain value when mergeSubdomains is true'
+        );
+    }
+
+    /**
+     * Test that a non-www is not stripped from setCookieDomain value when mergeSubdomains is true.
+     */
+    public function testJavascriptTrackingCode_MergeSubdomainsDoesntStripNonWww()
+    {
+        $generator = new TrackerCodeGenerator();
+
+        $urls = [
+            'https://foo.example.com/piwik',
+        ];
+        $idSite = \Piwik\Plugins\SitesManager\API::getInstance()->addSite('Site name here <-->', $urls);
+        $jsTag = $generator->generate(
+            $idSite,
+            $piwikUrl = 'https://foo.example.com/piwik',
+            $mergeSubdomains = true
+        );
+
+        $expectedString = '_paq.push(["setCookieDomain", "*.foo.example.com"]);';
+
+        $this->assertStringContainsString(
+            $expectedString,
+            $jsTag,
+            'non-www subdomain is not stripped from setCookieDomain value when mergeSubdomains is true'
+        );
+    }
+
     private function hasCustomVariables()
     {
         return Manager::getInstance()->isPluginActivated('CustomVariables');
